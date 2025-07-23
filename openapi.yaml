@@ -4,11 +4,61 @@ info:
   version: 1.0.0
   description: API First Example.
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3000/v1
+    description: Version 1 de la API
+  - url:  http://localhost:3000/v2
+    description: Version 2 de la API
 components:
   schemas:
     HelloResponse:
       type: object
+    Product:
+      type: object
+      required:
+        - name
+        - price
+        - category
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 40
+        description:
+          type: string
+          maxLength: 500
+        price:
+          type: number
+          minimum: 0
+          multipleOf: 0.01
+        category:
+          type: string
+          enum: [Electronics,Clothing, Books,Other]
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        inStock:
+          type: boolean
+        specifications:
+          type: object
+          additionalProperties:
+            type: string
+        ratings:
+          type: array
+          items:
+            type: object
+            required:
+              - score
+              - comment
+            properties:
+              score:
+                type: integer
+                minimum: 1
+                maximum: 5
+              comment:
+                type: string
+                maxLength: 200
 paths:
   /hello:
     get:
@@ -63,7 +113,6 @@ paths:
                   properties:
                     id:
                       type: string
-                      format: uuid
                     name:
                       type: string
                     age:
@@ -99,61 +148,173 @@ paths:
                 type: object
                 properties:
                   message:
-                    type: string
-  /users/update/{id}:
-      put:
-        summary: Actualizar un nuevo usuario
-        parameters:
-          - in: path
-            name: id
-            required: true
-            schema:
-              type: integer
-        requestBody:
+                    type: string  
+    post:       
+      summary: Actualizar un nuevo usuario
+      parameters:
+        - in: path
+          name: id
           required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:              
+              type: object
+              required:
+                - name
+                - age
+                - email
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                age:
+                  type: integer
+                  minimum: 18
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Usuario actulizado correctamente
           content:
             application/json:
               schema:              
                 type: object
-                required:
-                  - name
-                  - age
-                  - email
                 properties:
+                  id:
+                    type: string                    
                   name:
                     type: string
-                    minLength: 2
                   age:
                     type: integer
-                    minimum: 18
                   email:
                     type: string
-                    format: email
-        responses:
-          '200':
-            description: Usuario actulizado correctamente
-            content:
-              application/json:
-                schema:              
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                    name:
-                      type: string
-                    age:
-                      type: integer
-                    email:
-                      type: string
-          '404':
-            description: Usuario no encontrado
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /products:
+    post:
+      summary: Crear un nuevo producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Producto creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
+    get:
+      summary: Listar todos los productos
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
 
+  /products/{id}:
+    get:
+      summary: Obtener producto por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Producto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+    put:
+      summary: Actualizar producto por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Producto actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+    delete:
+      summary: Eliminar producto por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Producto eliminado correctamente
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+ 
