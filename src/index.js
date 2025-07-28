@@ -69,14 +69,16 @@ app.post('/users/:id', (req, res) => {
 });
 
 // Ruta base
-app.get('/v1/hello', (req, res) => {
+app.get('/hello', (req, res) => {
     res.json({ message: 'Hello World' });
 });
 
 app.get('/v2/hello', (req, res) => {
-    res.json({ message: 'Hello World' ,
+    res.json({ 
+        message: 'Hello World',
         version: 'v2',
         timestamp: new Date().toISOString()
+    });
 });
 
 app.post('/users', (req, res) => {
@@ -271,4 +273,3 @@ app.listen(PORT, () => {
     console.log(`http://localhost:${PORT}/v1`);
     console.log(`http://localhost:${PORT}/v2`);
 });
-
